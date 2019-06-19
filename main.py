@@ -1,10 +1,10 @@
 
 
 
-#from machine import Pin,I2C,ADC
-#from time import sleep
+from machine import Pin,I2C,ADC
+from time import sleep
 
-#import ssd1306
+import ssd1306
 
 
 motion = False
