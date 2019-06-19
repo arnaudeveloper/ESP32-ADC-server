@@ -3,6 +3,8 @@
 
 #wifi
 import network                            ##Llibreria
+from machine import Pin,I2C,ADC
+from time import sleep
 
 import os
 
@@ -11,18 +13,15 @@ try:
 except:
   import socket
   
-from machine import Pin
-
 import esp
 #esp.osdebug(None)
 
 import gc
 gc.collect()
 
+gpio_state="OFF"
 
-def web_page():
-  gpio_state="OFF"
-  
+def web_page():  
   html = """
   <html>
     <head> <title>ESP Web Server</title> <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +33,8 @@ def web_page():
       </style>
     </head>
     <body> <h1>ESP Web Server</h1> 
-      <p>GPIO state: <strong>""" + gpio_state + """</strong></p><p><a href="/?led=on"><button class="button">ON</button></a></p>
+      <p>ADC value: <strong>""" + gpio_state + """</strong></p>
+      <p><a href="/?led=on"><button class="button">ON</button></a></p>
       <p><a href="/?led=off"><button class="button button2">OFF</button></a></p>      
       <h1>Form Demo</h1>
       <form action='wifi.py' method='get'>
@@ -47,7 +47,9 @@ def web_page():
   """
   return html
 
-  
+ 
+adc2=ADC(Pin(35))               
+
 
 station = network.WLAN(network.STA_IF)    ##Creem una estacio, dispositiu que es pot connectar a una red
 station.active(True)                      ##Activem l'estacio
@@ -64,7 +66,12 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((ip, 80))
 s.listen(5)
 
+gpio_state=str(adc2.read())
+print('ADC value:',str(adc2.read()))
+
 while True:
+
+  
   conn, addr = s.accept()
   print('Got a connection from %s' % str(addr))
 
@@ -87,17 +94,21 @@ while True:
   print(name.split()[0])
   
 
-
-
   response = web_page()
   conn.send('HTTP/1.1 200 OK\n')
   conn.send('Content-Type: text/html\n')
   conn.send('Connection: close\n\n')
   conn.sendall(response)
   conn.close()
+  
+  sleep(2)
+  gpio_state=str(adc2.read())
+  print('ADC value:',str(adc2.read()))
+  sleep(2)
 
 
 #hola
+
 
 
 
