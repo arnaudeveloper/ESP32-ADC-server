@@ -34,7 +34,7 @@ def web_page():
     </head>
     <body> <h1>ESP Web Server</h1> 
       <p>ADC value: <strong>""" + gpio_state + """</strong></p>
-      <p><a href="/?led=on"><button class="button">ON</button></a></p>
+      <p><a href="/?led=on"><button class="button">READ</button></a></p>
       <p><a href="/?led=off"><button class="button button2">OFF</button></a></p>      
       <h1>Form Demo</h1>
       <form action='wifi.py' method='get'>
