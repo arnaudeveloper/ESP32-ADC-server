@@ -1,9 +1,10 @@
 
 
-from machine import Pin,I2C,ADC
-from time import sleep
 
-import ssd1306
+#from machine import Pin,I2C,ADC
+#from time import sleep
+
+#import ssd1306
 
 
 motion = False
@@ -65,6 +66,7 @@ while True:
   lcd.show()
   
   sleep(0.1)
+
 
 
 
