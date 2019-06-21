@@ -1,12 +1,15 @@
+#Universitat de Barcelona. Domotica
+#2019
+#Authors:
+#         Alvaro Baucells Costa  
+#         Arnau Vicente Puiggros - GitHub: @arnaudeveloper
+
 import network
 import machine
 import socket
 import utime
 
 
-host2='192.168.4.2'
-#port=2000
-p2=2001
 s=None
 data=''
 essid='NCAP'
@@ -26,25 +29,23 @@ def Configuracio_acces_point(essid,password):
  #-----------
  
  
-Configuracio_acces_point(essid,password)
-
-#c=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
  
+#---Code----
+#-----------------
+Configuracio_acces_point(essid,password)                  #Configurem l'NCAP com Acces Point
 
-#try:
-  
-ip=ap.ifconfig()[0]                                 #get ip addr
-port=2000
+
+ip=ap.ifconfig()[0]                                         #Obtenim la IP propia
+port=2000                                                   #Port que utilitzarem per rebre les dades dels TIMs
 
 #Configuracio_del_socket_server(ip,port)  
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                   #create socket
-s.bind((ip,port))                                                       #Enllecem la ip amb el  port
-s.listen(5)                                                             #listen message
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)       #Creem un socket
+s.bind((ip,port))                                           #Enllecem la ip amb el  port
+s.listen(5)                                                 #Numero maxim de clients, simultanis
 
-count=0  
+count=0                                                     #Variable que ens serveix per contar el num de TIMs connectats
 
-while count<1:
+while count<1:            #Aquest while estara actiu fins que tots els TIMs s'han connectat
   
   conn, addr = s.accept()                                   #Crea una connexio quan el client envia un request
   print('Got a connection from %s' % str(addr))
@@ -53,9 +54,9 @@ while count<1:
   request = str(request)                                    #Ho convertim a string
   print('Content = %s' % request)                           #Printem el missatge
   
-  utime.sleep_ms(500)
+  utime.sleep_ms(500)                                       #Delay
   
-  ip_TIM=request.split("'")[1]                              #Separem la IP
+  ip_TIM=request.split("'")[1]                              #Separem la IP del TIM
   print('ip del tim:', ip_TIM)
   
   response = ip_TIM + '+ ok'                                #Creem la reposta
@@ -64,50 +65,41 @@ while count<1:
   conn.close()                                              #Tanquem la connexio 
   
   count=count+1                                             #Contador de ESP connectats
-  print('count',count)
+  print('count',count)                                      #Printem el num. de TIMs connectats
   
-  if count==1:                                              #Si hem arribat al limit tanquem el socket
-    s.close()      
+  if count==1:                                              #Si hem arribat al limit de connexions tanquem el socket
+    s.close() 
+
+
+#A partir d'aquest punt l'NCAP tanca el socket 2000, i  actua com a client
+
 print('iniciem config client')
 
-print('DEBUG===================>>')
-
-#----------------Fins aqui OK
-#Configuracio com a client
-
-#Inciem un socket client per demanar info al TIM
 addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
-print(addr_info)
+print(addr_info)                                                      #MAGIC!
 
-s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.close()
+s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
+s.close()                                                   #Tanquem el socket
 
-utime.sleep_ms(5000)
+utime.sleep_ms(5000)                                        #Delay
 
 
-print('DEBUG===================>>')
-p2=2005
-#ip_TIM='192.168.4.2'
+p2=2005                                                     #Port per on l'NCAP fa les seves comandes
 
 
 while True:
-  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  #c.connect((host2, p2))
-  #c.connect((192.168.4.2, p2))
-  
-  #s.connect(('192.168.4.2', p2))                        #Ens connectem al socket
-  s.connect((ip_TIM, p2))                                 #Ens connectem al socket
-  print('DEBUG===================>>')
+  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)       #Creem el socket
+
+  s.connect((ip_TIM, p2))                                   #Ens connectem al socket
 
   
-  msg='hola servidor'
-  s.send(msg)
-  print('DEBUG===================>>')
+  msg='hola servidor'                                       #Comanda
+  s.send(msg)                                               #Enviem la comanda
 
-  data=s.recv(1024)
-  print(data)
-  s.close()
-  utime.sleep_ms(5000)
+  data=s.recv(1024)                                         #Capturem la resposta
+  print(data)                                               #Printem la resposta 
+  s.close()                                                 #Tanquem la connexio
+  utime.sleep_ms(5000)                                      #Delay
     
 
 
