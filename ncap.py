@@ -15,6 +15,96 @@ data=''
 essid='NCAP'
 password='esp32ibz'
 
+def init():
+  global TIM1_NAME
+  global Channel1_TIM1_NAME
+  global Units_Channel1_TIM1_NAME
+  global Value_Channel1_TIM1_NAME
+  global Channel2_TIM1_NAME
+  global Units_Channel2_TIM1_NAME
+  global Value_Channel2_TIM1_NAME
+  global TIM2_NAME
+  global Channel1_TIM2_NAME
+  global Units_Channel1_TIM2_NAME
+  global Value_Channel1_TIM2_NAME
+  global Channel2_TIM2_NAME
+  global Units_Channel2_TIM2_NAME
+  global Value_Channel2_TIM2_NAME
+
+  TIM1_NAME="TIM1_NAME"
+  Channel1_TIM1_NAME="NAME1"
+  Units_Channel1_TIM1_NAME="NAME1"
+  Value_Channel1_TIM1_NAME="NAME1"
+  Channel2_TIM1_NAME="NAME1"
+  Units_Channel2_TIM1_NAME="NAME1"
+  Value_Channel2_TIM1_NAME="NAME1"
+  TIM2_NAME="NAME1"
+  Channel1_TIM2_NAME="NAME1"
+  Units_Channel1_TIM2_NAME="NAME1"
+  Value_Channel1_TIM2_NAME="NAME1"
+  Channel2_TIM2_NAME="NAME1"
+  Units_Channel2_TIM2_NAME="NAME1"
+  Value_Channel2_TIM2_NAME="NAME1"
+
+def web_page():
+  html = """
+  <html>
+    <head> <title>ESP Web Server</title> <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+      <style>html{font-family: Helvetica; display:inline-block; margin: 0px auto; text-align: center;}
+    				h1{color: #0F3376; padding: 2vh;}p{font-size: 1.5rem;}
+        			.button{display: inline-block; background-color: #e7bd3b; border: none;border-radius: 4px; color:white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: 									pointer;}
+    				.button2{background-color: #0000FF;}
+       				.button3{background-color: #FF0000;}
+      </style>
+    </head>
+    <body> <h1>ESP Web Server</h1>
+	<h2 style="text-align: center;">Tim 1: """+TIM1_NAME+""" <a href="/?led=on"><button class="button">READ</button></a></h2> 
+	<ul>
+	<li style="text-align: center;">Channel 1: """+Channel1_TIM1_NAME +"""
+	<ul>
+	<li style="text-align: center;">Units: """+Units_Channel1_TIM1_NAME+"""</li>
+	<li style="text-align: center;">Value: """+Value_Channel1_TIM1_NAME+"""</li>
+	</ul>
+	</li>
+	</ul>
+	<ul>
+	<li style="text-align: center;">Channel 2: """+Channel2_TIM1_NAME+""" 
+	<ul>
+	<li style="text-align: center;">Units: """+Units_Channel2_TIM1_NAME+"""</li>
+	<li style="text-align: center;">Value: """+Value_Channel2_TIM1_NAME+"""</li>
+	</ul>
+	</li>
+	</ul>
+	<h2 style="text-align: center;">Tim 2: """+TIM2_NAME+""" <a href="/?led=on"><button class="button button3">READ</button></a></h2>
+	<ul>
+	<li style="text-align: center;">Channel 1: """+Channel1_TIM2_NAME+"""
+	<ul>
+	<li style="text-align: center;">Units: """+Units_Channel1_TIM2_NAME+"""</li>
+	<li style="text-align: center;">Value: """+Value_Channel1_TIM2_NAME+"""</li>
+	</ul>
+	</li>
+	</ul>
+	<ul>
+	<li style="text-align: center;">Channel 2: """+Channel2_TIM2_NAME+"""
+	<ul>
+	<li style="text-align: center;">Units: """+Units_Channel2_TIM2_NAME+"""</li>
+	<li style="text-align: center;">Value: """+Value_Channel2_TIM2_NAME+"""</li>
+	</ul>
+	</li>
+	</ul>
+           
+      <h1>Send Function</h1>
+      <form action='wifi.py' method='get'>
+        <label for="myname">Command input</label>
+        <input id="myname" type="text" name="firstname" value="write your command" />
+        <input type="submit">
+      </form>
+    </body>
+  </html>
+  """
+  return html
+
 def Configuracio_acces_point(essid,password):
   global ap
   ap = network.WLAN(network.AP_IF)                                        #Configurem l'ESP32 com Acces Point
@@ -24,14 +114,47 @@ def Configuracio_acces_point(essid,password):
   print(ap.active())                                                      #Printar l'estat
   print(ap.ifconfig())                                                    #Printar la configuracio
 
+def Envia_comanda_al_TIM(ip_TIM,msg):
+  p2=2005                                                     #Port per on l'NCAP fa les seves comandes
+  #msg='hola servidor'                                       #Comanda
 
- #Codi------------
- #-----------
+
+  print('iniciem config client')
+
+  addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
+  print(addr_info)                                                      #MAGIC!
+
+  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
+  s.close()                                                   #Tanquem el socket
+
+  utime.sleep_ms(5000)                                        #Delay
+  
+  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)       #Creem el socket
+
+  s.connect((ip_TIM, p2))                                   #Ens connectem al socket
+
+  
+  s.send(msg)                                               #Enviem la comanda
+
+  data=s.recv(1024)                                         #Capturem la resposta
+  print(data)                                               #Printem la resposta 
+  s.close()                                                 #Tanquem la connexio
+  utime.sleep_ms(5000)                                      #Delay
+  
+  return data
+
+
+  
+
+
  
  
  
 #---Code----
 #-----------------
+
+init()    #inici varaibles
+
 Configuracio_acces_point(essid,password)                  #Configurem l'NCAP com Acces Point
 
 
@@ -73,33 +196,50 @@ while count<1:            #Aquest while estara actiu fins que tots els TIMs s'ha
 
 #A partir d'aquest punt l'NCAP tanca el socket 2000, i  actua com a client
 
-print('iniciem config client')
 
-addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
-print(addr_info)                                                      #MAGIC!
-
-s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
-s.close()                                                   #Tanquem el socket
-
-utime.sleep_ms(5000)                                        #Delay
-
-
-p2=2005                                                     #Port per on l'NCAP fa les seves comandes
-
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((ip, 80))
+s.listen(5)
 
 while True:
-  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)       #Creem el socket
-
-  s.connect((ip_TIM, p2))                                   #Ens connectem al socket
-
   
-  msg='hola servidor'                                       #Comanda
-  s.send(msg)                                               #Enviem la comanda
+  conn, addr = s.accept()
+  print('Got a connection from %s' % str(addr))
 
-  data=s.recv(1024)                                         #Capturem la resposta
-  print(data)                                               #Printem la resposta 
-  s.close()                                                 #Tanquem la connexio
-  utime.sleep_ms(5000)                                      #Delay
+  request = conn.recv(1024)
+  request = str(request)
+  print('Content = %s' % request)  #Printa tot el que ha capturat
+  
+  if 'firstname' in request:
+    name = request.split('=')[1]
+  else:
+    name = 'No name'
+    
+  #Afegint box funciona??
+
+  #second_value_html = request.find('/?firstname')
+  #second_value_html = request.find('/?value')
+
+
+  #name = value_html.split('=')[1]
+  print('Aqui va el que he capturat----->>>')
+  #print(second_value_html)
+  msg=name.split()[0]
+  print(name.split()[0])
+  
+
+
+  response = web_page()
+  conn.send('HTTP/1.1 200 OK\n')
+  conn.send('Content-Type: text/html\n')
+  conn.send('Connection: close\n\n')
+  conn.sendall(response)
+  conn.close()
+  
+  Envia_comanda_al_TIM(ip_TIM,msg)
+  
+  
+
     
 
 
