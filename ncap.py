@@ -59,7 +59,7 @@ def web_page():
       </style>
     </head>
     <body> <h1>ESP Web Server</h1>
-	<h2 style="text-align: center;">Tim 1: """+TIM1_NAME+""" <a href="/?led=on"><button class="button">READ</button></a></h2> 
+	<h2 style="text-align: center;">Tim 1: """+TIM1_NAME+""" <a href="/?led=TIM1"><button class="button">READ</button></a></h2> 
 	<ul>
 	<li style="text-align: center;">Channel 1: """+Channel1_TIM1_NAME +"""
 	<ul>
@@ -76,7 +76,7 @@ def web_page():
 	</ul>
 	</li>
 	</ul>
-	<h2 style="text-align: center;">Tim 2: """+TIM2_NAME+""" <a href="/?led=on"><button class="button button3">READ</button></a></h2>
+	<h2 style="text-align: center;">Tim 2: """+TIM2_NAME+""" <a href="/?led=TIM2"><button class="button button3">READ</button></a></h2>
 	<ul>
 	<li style="text-align: center;">Channel 1: """+Channel1_TIM2_NAME+"""
 	<ul>
@@ -121,11 +121,11 @@ def Envia_comanda_al_TIM(ip_TIM,msg):
 
   print('iniciem config client')
 
-  addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
-  print(addr_info)                                                      #MAGIC!
+  #addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
+  #print(addr_info)                                                      #MAGIC!
 
-  s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
-  s.close()                                                   #Tanquem el socket
+  #s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
+  #s.close()                                                   #Tanquem el socket
 
   utime.sleep_ms(5000)                                        #Delay
   
@@ -191,6 +191,7 @@ while count<1:            #Aquest while estara actiu fins que tots els TIMs s'ha
   print('count',count)                                      #Printem el num. de TIMs connectats
   
   if count==1:                                              #Si hem arribat al limit de connexions tanquem el socket
+    print("DEBUG============>")
     s.close() 
 
 
