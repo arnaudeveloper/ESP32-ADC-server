@@ -87,7 +87,7 @@ utime.sleep_ms(5000)
 
 print('DEBUG===================>>')
 p2=2005
-ip_TIM='192.168.4.2'
+#ip_TIM='192.168.4.2'
 
 
 while True:
