@@ -1,4 +1,5 @@
 
+
 import network
 import machine
 import socket
@@ -65,7 +66,7 @@ try:
   #Configuraci
   s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  #Socket del port 20001. Servidor
   
-  s2.bind((ip,2001))                                      #Enllecem la nostra ip amb el socket que obrirem per escoltar (Servidor)
+  s2.bind((ip,2005))                                      #Enllecem la nostra ip amb el socket que obrirem per escoltar (Servidor)
   s2.listen(5)                                            #Limit de clients
 
   while True:
@@ -76,9 +77,7 @@ try:
     request = conn.recv(1024)
     request = str(request)
     #Analitzar el request
-    ###
     
-    ###
     print('Content = %s' % request)  #Printa tot el que ha capturat
     
     #En funcio del request contestem
@@ -91,9 +90,11 @@ try:
 except:
   if (s2):
     s2.close()
+
   
   station.disconnect()
   station.active(False)
+
 
 
 
