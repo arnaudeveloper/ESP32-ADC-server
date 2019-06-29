@@ -1,11 +1,26 @@
-
-
+#Universitat de Barcelona. Domotica
+#2019
+#Authors:
+#         Arnau Vicente Puiggros - GitHub: @arnaudeveloper
+#         Alvaro Baucells Costa
 
 import machine
 import ssd1306
 import utime
 import functions
 import network
+import socket
+import struct
+
+#---Variables-----------------------------------------------
+
+host='192.168.4.1'                                          #necesitem ip del NCAP, que al primer socket actua com a servidor (host) 
+port=2000                                                   #port del primer socket
+s=None
+data=''
+ssid = 'NCAP'                                               #dades de la xarxa del NCAP
+connection = False
+password = 'esp32ibz'
 
 
 
@@ -58,7 +73,7 @@ init_GPIOs()
 
   
 estados= ['Ninguno', 'ok', 'arriba', 'abajo', 'izquierda', 'derecha']   #variables para elegir el menu con interrupciones
-modos = ['Modo_inicial', 'Modo_Automatico', 'Modo_Manual']
+modos = ['Modo_inicial', 'Modo_Automatico', 'Modo_Wifi']
 
 oled.fill(0)
 oled.show()
@@ -82,7 +97,7 @@ while(1):
       oled.text('MODO AUTOMATICO', 15, 30)
       oled.text(">", 0, 30)
       utime.sleep_ms(90)
-      oled.text('Opcio 2', 15, 50) 
+      oled.text('MODO WIFI', 15, 50) 
       oled.show()
       #azul(200)
       
@@ -101,7 +116,7 @@ while(1):
       oled.show()
       oled.text('MODO AUTOMATICO', 15, 30)
       utime.sleep_ms(90)
-      oled.text('Opcio 2', 15, 50) 
+      oled.text('MODO WIFI', 15, 50) 
       oled.text(">", 0, 50)
       oled.show()
     
@@ -176,34 +191,101 @@ while(1):
 
       
     
-  elif Modo== 'Modo_Manual':
-    oled.text('MODO MANUAL', 15, 10)
+  elif Modo== 'Modo_Wifi':
+    exit=0
+    oled.text('MODO WIFI', 15, 10)
     oled.hline(0,19, 128, 1)
     oled.text('<Salir', 0, 55)
     oled.text('Lux:', 35, 35)      #muestra el valor por pantalla
     oled.text('(ok)', 0, 35)
     oled.show()
-    
-        
-    if press is 1:
-      oled.fill_rect(0, 35, 32, 10, 0)        
-      oled.show()
-      utime.sleep_ms(2000)
-      oled.fill_rect(70, 35, 128, 8, 0)       #borra el valor dos segundos despues de mantenerlo en pantalla
-      oled.show()
-      press=0
-    oled.text('(ok)', 0, 35)
+
+    try:
+      print("DEBUG===============>1")
       
-    if exit==1:
-      utime.sleep_ms(100)
-      Modo='Modo_inicial'
-      state='abajo'
-      state2='Ninguno'
-      oled.fill(0)
-      oled.show()
+      while connection == False:
+        
+        station = network.WLAN(network.STA_IF)          #el TIM el configurem com a estacio, que accedeix a la xarxa del NCAP
+        station.active(True) 
+        
+        functions.Ens_conectem_a_la_red(ssid,password,station)
+        
+        connection = True 
+        print("DEBUG===============>2")
+      
+      print("DEBUG===============>3")    
+      ip=station.ifconfig()[0]                      #agafem la nostra ip per obrir el segon socket (ara com servidor)
+      print('ip:', ip)
+      
+      functions.Enviem_ip_al_NCAP(ip,host,port=2000)
+
+      
+      #Configuracio del segon socket com a servidor
+      print("DEBUG===============>4")    
+
+      s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  #Es crea el segon socket (utilitzarem port 2005)
+      s2.bind((ip,2005))                                      #Enllecem la nostra ip amb el socket que obrirem per escoltar (Servidor)
+      s2.listen(5)                                            #Limit de requests que acceptara
+      print("DEBUG===============>5")    
+
+
+      while True:
+        print("DEBUG===============>6")    
+    
+        conn, addr = s2.accept()         #estableix connexio quan rep un request, i guarda la direccio del client
+        print('Got a connection from %s' % str(addr))
+
+        request = conn.recv(1024)        #rep missatge del client, amb un limit de 1024 bytes
+        #Rebem la instruccio en bytes unpack    
+        #request = str(request)    
+        #print('Content = %s' % request)  #Printa tot el que ha capturat
+        
+        recuperem_variable=struct.unpack('h',request)    #Perfect
+        
+        comanda = recuperem_variable[0]
+        print(comanda)
+
+        
+        #request=request.split("'")[1]  
+        num_de_funcio=functions.Analitzar_comanda(comanda)
+        print("Num de funcio: ",num_de_funcio)
+
+        
+        response = "DATA"                #missatge que li tornem al client (en funcio del que demani)
+        #Enviem la resposta en bytes pack
+        conn.sendall(response)           #Enviem la resposta
+        conn.close()                     #Tanquem connexio per esperar la seguent connexio (es crea a l'inici del while)
+        if exit==1:
+          break  
+      
+      #oled.hline(0,19, 128, 1)
+      #oled.text('<Salir', 0, 55)
+      #oled.text('Lux:', 35, 35)      #muestra el valor por pantalla
+      #oled.text('(ok)', 0, 35)
+      #oled.show()
+      
+
+        
+    except:
+     if (s2):    
+      s2.close()                       #si esta obert el socket, el tanca per evitar problemes a l'hora de tornar-lo a obrir en un futur
+    s2.close()
+    station.disconnect()               #si s'ha parat el programa, es desconecta de la xarxa
+    station.active(False)
+  
+     
+    #if exit==1:
+    utime.sleep_ms(100)
+    Modo='Modo_inicial'
+    state='abajo'
+    state2='Ninguno'
+    oled.fill(0)
+    oled.show()
       
       
   else:
     pass
   
- 
+  
+
+
