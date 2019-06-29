@@ -61,10 +61,46 @@ def init_GPIOs():
     left_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=irq_left)
     right_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=irq_right)
     
-    adc = machine.ADC(machine.Pin(35))
-    adc.atten(machine.ADC.ATTN_11DB)
+    #adc = machine.ADC(machine.Pin(35))
+    #adc.atten(machine.ADC.ATTN_11DB)
 
+def Llegir_adc():
+  print("DEBUG=============>")
+  adc = machine.ADC(machine.Pin(35))
+  adc.atten(machine.ADC.ATTN_11DB)
+  
+  adc_sum=0
+  for x in range(10):
+    adc_sum+=adc.read()
+    #print(x)
+  #exit=0
+  adc_sum=adc_sum/10      #mA
+  adc_sum = adc_sum/1000  #A
+  
+  print("RAW: ",str(adc_sum))
+  adc_sum = 220*adc_sum   #mW
+  print("POT: ",str(adc_sum))
+  
+  return adc_sum
+  
+def Analitzar_comanda(request):
+  data=1
+  if request==128:
+    data=Llegir_adc()
+    comanda="Llegir"
+  elif request==160:
+    comanda="Llegir TEDS"
+  elif request==3:
+    comanda="Definir canal trigger"
+  elif request==255:
+    comanda="Trigger"
+  elif request==0:
+    comanda="Escriure"
+  else:
+    comanda="NO WORK"
     
+  return comanda,data
+  
 init_GPIOs()
 
 
@@ -158,6 +194,8 @@ while(1):
       oled.fill_rect(65, 35, 128, 8, 0)
 
       adc_sum=0
+      adc_sum=Llegir_adc()
+      '''
       for x in range(10):
         adc_sum+=adc.read()
         #print(x)
@@ -168,6 +206,7 @@ while(1):
       print("RAW: ",str(adc_sum))
       adc_sum = 220*adc_sum   #mW
       print("POT: ",str(adc_sum))
+      '''
       
       #adc_sum = adc_sum/100    #Correction 1
       #adc_sum = adc_sum*6.4    #Correction 1
@@ -247,14 +286,19 @@ while(1):
 
         
         #request=request.split("'")[1]  
-        num_de_funcio=functions.Analitzar_comanda(comanda)
+        num_de_funcio,data=Analitzar_comanda(comanda)
         print("Num de funcio: ",num_de_funcio)
-
+        print("DEBUG===============>7")    
         
-        response = "DATA"                #missatge que li tornem al client (en funcio del que demani)
+        data_send=struct.pack('f',data)
+        
+        response = data_send              #missatge que li tornem al client (en funcio del que demani)
         #Enviem la resposta en bytes pack
         conn.sendall(response)           #Enviem la resposta
+        
         conn.close()                     #Tanquem connexio per esperar la seguent connexio (es crea a l'inici del while)
+        print("DEBUG===============>8")    
+
         if exit==1:
           break  
       
@@ -288,4 +332,4 @@ while(1):
   
   
 
-
+  
