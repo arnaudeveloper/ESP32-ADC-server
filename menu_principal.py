@@ -83,12 +83,25 @@ def Llegir_adc():
   
   return adc_sum
   
+
+def Llegir_TEDS():
+  f=open('Meta_TEDS.dat','rb')
+  buffer=f.read()
+  f.close()
+  print(buffer)
+  return buffer
+  
+  
 def Analitzar_comanda(request):
-  data=1
+  data=struct.pack('f',1)
   if request==128:
     data=Llegir_adc()
+    data=struct.pack('f',data)
+    
     comanda="Llegir"
+    
   elif request==160:
+    data=Llegir_TEDS()
     comanda="Llegir TEDS"
   elif request==3:
     comanda="Definir canal trigger"
@@ -286,11 +299,11 @@ while(1):
 
         
         #request=request.split("'")[1]  
-        num_de_funcio,data=Analitzar_comanda(comanda)
+        num_de_funcio,data_send=Analitzar_comanda(comanda)
         print("Num de funcio: ",num_de_funcio)
         print("DEBUG===============>7")    
         
-        data_send=struct.pack('f',data)
+        #data_send=struct.pack('f',data)
         
         response = data_send              #missatge que li tornem al client (en funcio del que demani)
         #Enviem la resposta en bytes pack
