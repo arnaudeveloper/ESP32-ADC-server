@@ -1,5 +1,10 @@
+#Universitat de Barcelona. Domotica
+#2019
+#Authors:
+#         Arnau Vicente Puiggros - GitHub: @arnaudeveloper
+#         Alvaro Baucells Costa
 
-
+#Codi TIM
 
 
 import utime
