@@ -248,8 +248,6 @@ while(1):
     oled.text('MODO WIFI', 15, 10)
     oled.hline(0,19, 128, 1)
     oled.text('<Salir', 0, 55)
-    oled.text('Lux:', 35, 35)      #muestra el valor por pantalla
-    oled.text('(ok)', 0, 35)
     oled.show()
 
     try:
@@ -291,11 +289,14 @@ while(1):
         #Rebem la instruccio en bytes unpack    
         #request = str(request)    
         #print('Content = %s' % request)  #Printa tot el que ha capturat
-        
-        recuperem_variable=struct.unpack('h',request)    #Perfect
-        
+        print("Request: ", request)
+        recuperem_variable=struct.unpack('hh',request)    #Perfect
+        #recuperem_variable=struct.unpack('h',request)    #Perfect
+        print("REcuperem variable: ", recuperem_variable)
         comanda = recuperem_variable[0]
+        data_guardar=recuperem_variable[1]
         print(comanda)
+        print(data_guardar)
 
         
         #request=request.split("'")[1]  
@@ -311,7 +312,11 @@ while(1):
         
         conn.close()                     #Tanquem connexio per esperar la seguent connexio (es crea a l'inici del while)
         print("DEBUG===============>8")    
-
+        
+        oled.fill_rect(0, 30, 128, 8, 0)
+        oled.text(str(data_guardar), 60, 30)
+        oled.show()
+        
         if exit==1:
           break  
       
@@ -343,6 +348,4 @@ while(1):
   else:
     pass
   
-  
-
   
