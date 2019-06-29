@@ -1,3 +1,4 @@
+
 #Universitat de Barcelona. Domotica
 #2019
 #Authors:
@@ -10,6 +11,8 @@ import network
 import machine
 import socket
 import utime
+
+import struct
 
 #---Variables-----------------------------------------------
 
@@ -45,7 +48,21 @@ def Ens_conectem_a_la_red(ssid,password):
   print('Connection successful')
   print(station.ifconfig())
   
-
+def Analitzar_comanda(request):
+  if request==128:
+    comanda="Llegir"
+  elif request==160:
+    comanda="Llegir TEDS"
+  elif request==3:
+    comanda="Definir canal trigger"
+  elif request==255:
+    comanda="Trigger"
+  elif request==0:
+    comanda="Escriure"
+  else:
+    comanda="NO WORK"
+  return comanda
+  
 
 #---Codi---------------------------------------------------
 
@@ -74,10 +91,23 @@ try:
     print('Got a connection from %s' % str(addr))
 
     request = conn.recv(1024)        #rep missatge del client, amb un limit de 1024 bytes
-    request = str(request)
-    print('Content = %s' % request)  #Printa tot el que ha capturat
+    #Rebem la instruccio en bytes unpack    
+    #request = str(request)    
+    #print('Content = %s' % request)  #Printa tot el que ha capturat
+    
+    recuperem_variable=struct.unpack('h',request)    #Perfect
+    
+    comanda = recuperem_variable[0]
+    print(comanda)
+
+    
+    #request=request.split("'")[1]  
+    num_de_funcio=Analitzar_comanda(comanda)
+    print("Num de funcio: ",num_de_funcio)
+
     
     response = "DATA"                #missatge que li tornem al client (en funcio del que demani)
+    #Enviem la resposta en bytes pack
     conn.sendall(response)           #Enviem la resposta
     conn.close()                     #Tanquem connexio per esperar la seguent connexio (es crea a l'inici del while)
       
@@ -87,5 +117,6 @@ except:                              #si es para el programa de manera externa, 
     s2.close()                       #si esta obert el socket, el tanca per evitar problemes a l'hora de tornar-lo a obrir en un futur
   station.disconnect()               #si s'ha parat el programa, es desconecta de la xarxa
   station.active(False)
+
 
 
