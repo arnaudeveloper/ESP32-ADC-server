@@ -24,6 +24,7 @@ password = 'esp32ibz'
 
 
 
+
 i2c = machine.I2C(scl=machine.Pin(22), sda=machine.Pin(21))   #inicializa I2C
 oled = ssd1306.SSD1306_I2C(128, 64, i2c, 0x3c)   #inicializa pantalla
 oled.fill(0)          #texto de inicio 
@@ -95,9 +96,7 @@ def Llegir_TEDS():
 def Analitzar_comanda(request):
   data=struct.pack('f',1)
   if request==128:
-    data=Llegir_adc()
-    data=struct.pack('f',data)
-    
+    data=data
     comanda="Llegir"
     
   elif request==160:
@@ -106,6 +105,8 @@ def Analitzar_comanda(request):
   elif request==3:
     comanda="Definir canal trigger"
   elif request==255:
+    data=Llegir_adc()
+    data=struct.pack('f',data)
     comanda="Trigger"
   elif request==0:
     comanda="Escriure"
@@ -301,7 +302,13 @@ while(1):
         
         #request=request.split("'")[1]  
         num_de_funcio,data_send=Analitzar_comanda(comanda)
+        
         print("Num de funcio: ",num_de_funcio)
+        if num_de_funcio=="Trigger":
+          data_lectura=data_send
+          
+        if num_de_funcio=="Llegir":
+          data_send=data_lectura
         print("DEBUG===============>7")    
         
         #data_send=struct.pack('f',data)
