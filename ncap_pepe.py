@@ -1,5 +1,6 @@
 
 
+
 #Universitat de Barcelona. Domotica
 #2019
 #Authors:
@@ -152,7 +153,7 @@ def Envia_comanda_al_TIM(ip_TIM,msg):
   else:
     print(data) 
   s.close()                                                 #Tanquem la connexio
-  utime.sleep_ms(5000)                                      #Delay
+  utime.sleep_ms(2000)                                      #Delay
   
   return data
 
@@ -262,7 +263,8 @@ try:
       
     
     if j==1:
-      msg=3
+      msg=255
+      #msg=3
       inf=2
       decode=1
       
@@ -276,7 +278,8 @@ try:
       decode=1
       
     if j==4:
-      msg=255
+      #msg=255
+      msg=3
       decode=1
       j=-1
       
