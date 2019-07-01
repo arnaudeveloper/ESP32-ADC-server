@@ -1,8 +1,5 @@
 
 
-
-
-
 #Universitat de Barcelona. Domotica
 #2019
 #Authors:
@@ -49,6 +46,7 @@ def init():
   Value_Channel1_TIM2_NAME="NAME1"
   Channel2_TIM2_NAME="NAME1"
   Units_Channel2_TIM2_NAME="NAME1"
+
   Value_Channel2_TIM2_NAME="NAME1"
 
 def web_page():
@@ -129,6 +127,7 @@ def Envia_comanda_al_TIM(ip_TIM,msg):
   #addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)          #MAGIC!
   #print(addr_info)                                                      #MAGIC!
 
+
   #s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)         #Creem un socket
   #s.close()                                                   #Tanquem el socket
 
@@ -143,7 +142,15 @@ def Envia_comanda_al_TIM(ip_TIM,msg):
   s.send(msg)                                               #Enviem la comanda
   print ('despues')
   data=s.recv(1024)                                         #Capturem la resposta
-  print(data)                                               #Printem la resposta 
+  #print(data)                                               #Printem la resposta
+  if decode==1:
+    data=struct.unpack('f', data)
+    print('data float',data)
+  elif decode==0:
+    #data=struct.unpack('ffffffffffff', data)
+    print('data TEDS',data)
+  else:
+    print(data) 
   s.close()                                                 #Tanquem la connexio
   utime.sleep_ms(5000)                                      #Delay
   
@@ -211,7 +218,7 @@ s.listen(5)'''
 try:
   j=0
   inf=0
-  
+  decode=10
   while True:
 
   
@@ -251,29 +258,30 @@ try:
     if j==0:
 
       msg=160
-      
+      decode=0
       
     
     if j==1:
       msg=3
-      
+      inf=2
+      decode=1
       
     if j==2:
       msg=0
       inf=255
-      
+      decode=1
       
     if j==3:
       msg=128
-      
+      decode=1
       
     if j==4:
       msg=255
-      
+      decode=1
       j=-1
       
     #env=struct.pack('h', msg)
-    env=struct.pack('hh', msg, msg)
+    env=struct.pack('hh', msg, inf)
     
     
     Envia_comanda_al_TIM(ip_TIM,env)
@@ -286,7 +294,5 @@ except:
   ap.disconnect()               #si s'ha parat el programa, es desconecta de la xarxa
   ap.active(False)
     
-
-
 
 
